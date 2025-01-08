@@ -48,10 +48,10 @@ public:
     TASK3::ShootResult result = world.shoot(x, y);
 
     switch (result){
-      case TASK3::WATER: return "WATER: Kein Treffer.";
-      case TASK3::SHIP_HIT: return "SHIP HIT: Schiffe getroffen!" ;
+     case TASK3::WATER: return "WATER: Kein Treffer.";
+     case TASK3::SHIP_HIT: return "SHIP HIT: Schiffe getroffen!" ;
      case TASK3::SHIP_DESTROYED: return "SHIP DEST: Schiff zerstört!";
-     case TASK3::GAME_OVER: return "GAMEOVER: Alle Schiffe zerstört! Spiel beendet.";
+     case TASK3::ALL_SHIPS_DESTROYED: return "GAMEOVER: Alle Schiffe zerstört! Spiel beendet.";
      default: return "ERROR: Unerwartetes Problem.";
 
     }
@@ -62,8 +62,8 @@ public:
 
 int main() {
 const int port = 2022;
-const int maxDataSizeRecv= 25;
-SchiffeServer server (2022 , 25);
+const int maxDataSizeRecv= 4096;
+SchiffeServer server (2022 , 4096);
 server.run();
 return 0;
 

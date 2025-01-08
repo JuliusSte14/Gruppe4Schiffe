@@ -8,65 +8,58 @@
 #include <fstream>
 #include <string>
 #include <iostream>
-#include <unistd.h> //contains various constants
+#include <unistd.h> // enthält verschiedene Konstanten
 
 #include "SIMPLESOCKET.H"
 
-
 using namespace std;
 
-int main(){
-  const string serverAddress = "32.0.0.1";
-  const int serverPort = 2022;
+int main() {
+    const string serverAddress = "127.0.0.1"; // Serveradresse
+    const int serverPort = 2022; // Serverport
 
-  TCPclient client ;
+    TCPclient client;
 
+    if (!client.conn(serverAddress, serverPort)) {
+        cerr << "Verbindung zum Server fehlgeschlagen." << endl;
+        return -1;
+    }
+    cout << "Verbindung mit dem Server!" << endl;
 
-  if (!client.conn(serverAddress, serverPort)){
-  cerr << "Verbindung zum Server fehlgeschlagen." << endl;
-  return -1;
+    // Einfacher Schussalgorithmus
+    int totalShots = 0;  // Anzahl der abgegebenen Schüsse
+    bool gameOver = false;
 
-  }
-  cout << "Verbindung mit dem Server!" << endl;
+    for (int x = 0; x <= 9 && !gameOver; ++x) {
+        for (int y = 0; y <= 9 && !gameOver; ++y) {
+            totalShots++;
+            string input = to_string(x) + "," + to_string(y);
 
+            // Daten an den Server senden
+            if (!client.sendData(input)) {
+                cerr << "Fehler beim Senden der Daten an den Server." << endl;
+                continue;
+            }
 
-  //Einfacher Schussalgorythmus
-  int totalShots = 0; // Anzahl der abgegebenen Schüsse
-  bool gameOver = false;
+            // Antwort vom Server empfangen
+            string response = client.receive(1024);
+            if (response.empty()) {
+                cerr << "Fehler beim Empfangen der Antwort vom Server." << endl;
+                continue;
+            }
 
-  for (int x = 1; x <= 10 && !gameOver; ++x) {
-    for (int y = 1; y <= 10 && !gameOver; ++y) {
-    totalShots++;
-    string input = to_string(x) + "," + to_string(y);
+            cout << "Antwort vom Server: " << response << endl;
 
+            // Prüfen, ob das Spiel vorbei ist
+            if (response == "GAMEOVER: Alle Schiffe zerstört! Spiel beendet.") {
+                cout << "Spiel beendet nach " << totalShots << " Zügen!" << endl;
+                gameOver = true;
+            }
+        }
+    }
 
-
-  if (!client.sendData(input)){
-  cerr << "Fehler beim Senden der daten an den Server." << endl;
-  continue;
-
-  }
-  string response = client.receive(32);
-  if (response.empty()){
-  cerr << "Fehler beim Empfangen der Antwort von Server." << endl;
-  continue;
-
-  }
-
- cout << "Antwort vom Server:" << response << endl;
-
- // Prüfen, ob das Spiel vorbei ist
-  if (response == "GAMEOVER") {
-  cout << "Spiel beendet nach " << totalShots << " Zügen!" << endl;
-  gameOver = true;
-
- }
-
-
-  }
-
- // Anzahl der Züge in eine Datei schreiben
-  ofstream outFile("spielstatistik.txt");
+    // Anzahl der Züge in eine Datei schreiben
+    ofstream outFile("spielstatistik.txt");
     if (outFile.is_open()) {
         outFile << "Spiel beendet nach " << totalShots << " Zügen." << endl;
         outFile.close();
@@ -75,11 +68,5 @@ int main(){
         cerr << "Fehler beim Öffnen der Datei 'spielstatistik.txt'." << endl;
     }
 
-  if (gameOver) break; // Bricht die äußere Schleife ab, wenn Spiel vorbei ist
-
-  return 0;
-
-
+    return 0;
 }
-}
-
