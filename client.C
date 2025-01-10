@@ -112,9 +112,9 @@ int main()
         {
             case 0: {
                 cout << "Sie haben die Strategie 'linear' gewählt." << endl;
-                for (int x = 0; x <= 9 && !gameOver; ++x)
+                for (int x = 1; x <= 10 && !gameOver; ++x)
                 {
-                    for (int y = 0; y <= 9 && !gameOver; ++y)
+                    for (int y = 1; y <= 10 && !gameOver; ++y)
                     {
                         totalShots++;
                         string Message = "COORD[" + to_string(x) + "," + to_string(y) + "]";
@@ -176,8 +176,8 @@ int main()
                     while (!gameOver && totalShots >=100)
                         {
                         // Zufällige Koordinaten generieren
-                        int x = rand() % 10;
-                        int y = rand() % 10;
+                        int x = rand() % 10+1;
+                        int y = rand() % 10+1;
 
                         // Prüfen, ob das Feld schon abgeschossen wurde
                         if (field[x][y]) {
@@ -231,8 +231,8 @@ int main()
                     int toFollowCount = 0;             // Anzahl der Felder in der Nachverfolgungsliste
 
                     // Geordnete Suche: Reihenweises Abschießen der Felder
-                    for (int x = 0; x <= 9 && !gameOver; ++x) {
-                        for (int y = 0; y <= 9 && !gameOver; ++y) {
+                    for (int x = 1; x <= 10 && !gameOver; ++x) {
+                        for (int y = 1; y <= 10 && !gameOver; ++y) {
                             // Falls Nachverfolgung aktiviert ist, geordnete Suche abbrechen
                             if (toFollowCount > 0) break;
 

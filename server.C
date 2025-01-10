@@ -56,6 +56,10 @@ protected:
             return string ("Error. Could not read coord-data.");
         }
 
+    if (x>10 && y>10){
+    return string ("ERRORBORDER");
+    }
+
         TASK3::ShootResult result = world->shoot(x, y);
 
         switch (result) {
