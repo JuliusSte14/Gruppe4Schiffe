@@ -4,6 +4,7 @@
  *  Created on: 11.09.2019
  *      Author: aml
  */
+
 #include <cstdio> // standard input and output library
 #include <cstdlib> // this includes functions regarding memory allocation
 #include <cstring> // contains string functions
@@ -24,48 +25,56 @@
 #include <string>
 #include "TASK3.C"
 
+
 using namespace std;
 
- class SchiffeServer : public TCPserver{
+class SchiffeServer : public TCPserver{
 private:
-  TASK3::World world;
+    TASK3::World *world; // Spielfeld-Objekt aus TASK3
 
 public:
-  SchiffeServer(int port, int maxDataSizeRecv)
-  :TCPserver(port, maxDataSizeRecv), world(10, 10, 1, 2, 3, 4){
-  cout << "Server gestartet!"<< endl;
-  cout << "Spielfeld (10x10) mit 1xFünfer, 2xVierer, 3xDreier, 4xZweier-Schiffen erstellt." << endl;
-  }
-   protected:
-
-    string myResponse(string input) override {
-    int x = -1, y= -1;
-
-    if (sscanf (input.c_str(), "%d,%d", &x, &y) !=2 ){
-    return "ERROR: Ungültige Eingabe! Bitte 'x, y' zwischen 1 und 10 senden.";
-
+    SchiffeServer(int port, int maxDataSizeRecv) : TCPserver(port, maxDataSizeRecv)
+    {
+        world = new TASK3::World();
+        cout << "Server gestartet!" << endl;
+        cout << "Spielfeld (10x10) mit 1xFünfer, 2xVierer, 3xDreier, 4xZweier-Schiffen erstellt." << endl;
+        usleep(10000);
     }
-    TASK3::ShootResult result = world.shoot(x, y);
+protected:
+    string myResponse(string input) override
+    {
+    int x = -1, y = -1;
 
-    switch (result){
-     case TASK3::WATER: return "WATER: Kein Treffer.";
-     case TASK3::SHIP_HIT: return "SHIP HIT: Schiffe getroffen!" ;
-     case TASK3::SHIP_DESTROYED: return "SHIP DEST: Schiff zerstört!";
-     case TASK3::ALL_SHIPS_DESTROYED: return "GAMEOVER: Alle Schiffe zerstört! Spiel beendet.";
-     default: return "ERROR: Unerwartetes Problem.";
-
-    }
+    if (input.compare(0,7,"NEWGAME") == 0){
+        delete world;
+        world = new TASK3::World();
+        return string("DONE");
     }
 
+    if (input.compare(0,6,"COORD[") == 0){
+        if (sscanf (input.c_str(), "COORD[%d,%d]", &x, &y) != 2){
+            return string ("Error. Could not read coord-data.");
+        }
+
+        TASK3::ShootResult result = world->shoot(x, y);
+
+        switch (result) {
+            case TASK3::WATER: return "WATER";
+            case TASK3::SHIP_HIT: return "SHIPHIT";
+            case TASK3::SHIP_DESTROYED: return "SHIPDEST";
+            case TASK3::ALL_SHIPS_DESTROYED: return "GAMEOVER";
+            case TASK3::GAME_OVER: return "GAMEOVER";
+            default: return "ERROR";
+        }
+    }
+    }
     };
 
 
-int main() {
-const int port = 2022;
-const int maxDataSizeRecv= 4096;
-SchiffeServer server (2022 , 4096);
-server.run();
-return 0;
-
+int main (){
+    const int port = 2022;
+    const int maxDataSizeRecv = 64;
+    SchiffeServer server (2022, 64); //Server starten
+    server.run();
+    return 0;
 }
-

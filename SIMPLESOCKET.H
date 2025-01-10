@@ -103,7 +103,6 @@ public:
 	 */
 	~TCPserver();
 
-
 	/**
 	 *
 	 *  \brief constructor
