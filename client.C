@@ -4,6 +4,7 @@
  *  Created on: 11.09.2019
  *      Author: aml
  */
+#include<random>
 #include <cstdlib>
 #include <ctime>
 #include <cstring>
@@ -71,6 +72,10 @@ int main()
 
     cout<<"Neuer Durchlauf wird gestartet"<<endl;
 
+    usleep(500000);
+
+
+
     if (Answer == "linear") {
         strategy = 0;
     } else if (Answer == "rand") {
@@ -80,12 +85,23 @@ int main()
     }
 
 
+    // Art des Durchlaufs in eine Datei schreiben
+    ofstream outFile("spielstatistik.txt", ios::app);
+    if (outFile.is_open()) {
+        outFile << "Durchlauf mit " << amountgames<<" Spielen und "<< Answer<< " Suche."<< endl;
+        outFile.close();
+    } else {
+        cerr << "Fehler beim Öffnen der Datei 'spielstatistik.txt'." << endl;
+    }
+
+
 
     while(amountgames >=1)
     {
 
         string Message ="NEWGAME";
         int shipsDestroyed=0;
+        gameOver = false;
         client.sendData(Message);
         // Daten an den Server senden
         if (!client.sendData(Message))
@@ -137,20 +153,21 @@ int main()
                         cout << "Antwort vom Server: " << Response << endl;
 
 
-                        if (Response.compare(0,8,"SHIPDEST") == 0)
+
+
+                        if (Response.compare(0,8,"GAMEOVER") == 0)
                         {
-                        shipsDestroyed++;
+                        usleep(10000);
+                        cout << "Spiel beendet nach " << totalShots << " Zügen!" << endl;
+                        gameOver = true;
                         continue;
                         }
-
-                        // Prüfen, ob das Spiel vorbei ist
-                        if (Response == "GAMEOVER" && shipsDestroyed==10)
-                        {
-                            cout << "Spiel beendet nach " << totalShots << " Zügen!" << endl;
-                            gameOver = true;
                         }
+
+
+
                     }
-                }
+
 
                 // Anzahl der Züge in eine Datei schreiben
                 ofstream outFile("spielstatistik.txt", ios::app);
@@ -172,22 +189,21 @@ int main()
                         // Spielfeld initialisieren (10x10) mit false
                     bool field[10][10] = {false};
                     srand(time(nullptr)); // Zufallsgenerator initialisieren
+                    int x=0;
+                    int y=0;
 
-                    while (!gameOver && totalShots >=100)
+                    while (!gameOver)
                         {
-                        // Zufällige Koordinaten generieren
-                        int x = rand() % 10+1;
-                        int y = rand() % 10+1;
+                        do{
+                        x = rand() %10;
+                        y = rand() %10;
+                        }while(field[x][y]==true);
 
-                        // Prüfen, ob das Feld schon abgeschossen wurde
-                        if (field[x][y]) {
-                            continue; // Feld wurde bereits beschossen, nächste Iteration
-                        }
 
                         // Feld markieren und Schuss ausführen
                         field[x][y] = true;
                         totalShots++;
-                        string Message = "COORD[" + to_string(x) + "," + to_string(y) + "]";
+                        string Message = "COORD[" + to_string(x+1) + "," + to_string(y+1) + "]";
 
                         // Daten an den Server senden
                         if (!client.sendData(Message)) {
@@ -205,15 +221,18 @@ int main()
                         cout << "Antwort vom Server: " << Response << endl;
 
                         // Prüfen, ob das Spiel vorbei ist
-                        if (Response == "GAMEOVER") {
-                            cout << "Spiel beendet nach " << totalShots << " Zügen!" << endl;
-                            gameOver = true;
+                       if (Response.compare(0,8,"GAMEOVER") == 0)
+                        {
+                        usleep(10000);
+                        cout << "Spiel beendet nach " << totalShots << " Zügen!" << endl;
+                        gameOver = true;
                         }
                     }
 
                     // Anzahl der Züge in eine Datei schreiben
                     ofstream outFile("spielstatistik.txt", ios::app);
                     if (outFile.is_open()) {
+
                         outFile << "Spiel beendet nach " << totalShots << " Zügen." << endl;
                         outFile.close();
                         cout << "Spielstatistik wurde in 'spielstatistik.txt' gespeichert." << endl;
@@ -225,8 +244,7 @@ int main()
             }
             case 2: {
                 cout << "Sie haben die Strategie 'complex' gewählt." << endl;
-
-                    bool shotFields[10][10] = {false}; // Alle Felder initial unbeschossen
+                bool shotFields[10][10] = {false}; // Alle Felder initial unbeschossen
                     pair<int, int> toFollow[100];      // Array für Nachverfolgung von Feldern
                     int toFollowCount = 0;             // Anzahl der Felder in der Nachverfolgungsliste
 
@@ -255,11 +273,11 @@ int main()
                                 cout << "Antwort vom Server: " << Response << endl;
                                 totalShots++;
 
-                                if (Response == "GAMEOVER") {
-                                    cout << "Spiel beendet nach " << totalShots << " Zügen!" << endl;
-                                    gameOver = true;
-                                } else if (Response == "HIT") {
-                                    cout << "Treffer bei (" << x << "," << y << ")!" << endl;
+                                if (Response.compare(0,8,"GAMEOVER") == 0)
+                                {
+                                cout << "Spiel beendet nach " << totalShots << " Zügen!" << endl;
+                                gameOver = true;
+                                }
 
                                     // Benachbarte Felder zur Nachverfolgung hinzufügen
                                     if (x > 0 && !shotFields[x - 1][y]) toFollow[toFollowCount++] = {x - 1, y}; // Nach oben
@@ -268,7 +286,7 @@ int main()
                                     if (y < 9 && !shotFields[x][y + 1]) toFollow[toFollowCount++] = {x, y + 1}; // Nach rechts
                                 }
                             }
-                        }
+
                     }
 
                     // Wechsel zu "Treffer und Nachverfolgung", wenn Treffer gefunden wurde
@@ -335,6 +353,8 @@ int main()
                     }
 
                     break;
+
+
                 }
             default: {
                 cout << "ERROR" << endl;
