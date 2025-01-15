@@ -71,6 +71,7 @@ protected:
             default: return "ERROR";
         }
     }
+    return string("UNKNOWNCOMMAND");
     }
     };
 
