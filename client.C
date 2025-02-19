@@ -172,7 +172,7 @@ void LinearStrategie(TCPclient& client, int& totalShots, bool& gameOver)
             if (Response.compare(0, 8, "GAMEOVER") == 0)
             {
                 usleep(10000);
-                cout << "Spiel beendet nach " << totalShots << " Zügen!" << endl;
+                cout << /*"Spiel beendet nach " <<*/ totalShots /*<< " Zügen!"*/ << endl;
                 gameOver = true;
                 break;
             }
@@ -215,7 +215,7 @@ void RandomStrategie(TCPclient& client, int& totalShots, bool& gameOver)
 
         if (Response.compare(0, 8, "GAMEOVER") == 0)
         {
-            cout << "Spiel beendet nach " << totalShots << " Zügen!" << endl;
+            cout << /*"Spiel beendet nach "<<*/ totalShots /*<< " Zügen!"*/ << endl;
             gameOver = true;
         }
     }
@@ -251,7 +251,7 @@ void RandomUnbegrenztStrategie(TCPclient& client, int& totalShots, bool& gameOve
 
         if (Response.compare(0, 8, "GAMEOVER") == 0)
         {
-            cout << "Spiel beendet nach " << totalShots << " Zügen!" << endl;
+            cout << /*"Spiel beendet nach " <<*/ totalShots /*<< " Zügen!"*/<< endl;
             gameOver = true;
         }
     }
